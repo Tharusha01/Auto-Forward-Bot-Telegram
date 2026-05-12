@@ -42,11 +42,18 @@ def parse_channel(value: str):
         return value
 
 
+def parse_channels(value: str):
+    """Parse comma-separated channel values into a list."""
+    if not value:
+        return []
+    return [parse_channel(v.strip()) for v in value.split(',') if v.strip()]
+
+
 API_ID = int(os.getenv('API_ID'))
 API_HASH = os.getenv('API_HASH')
 PHONE_NUMBER = os.getenv('PHONE_NUMBER')
 SESSION_STRING = os.getenv('SESSION_STRING')
-SOURCE_CHANNEL = parse_channel(os.getenv('SOURCE_CHANNEL'))
+SOURCE_CHANNELS = parse_channels(os.getenv('SOURCE_CHANNELS', os.getenv('SOURCE_CHANNEL', '')))
 TARGET_CHANNEL = parse_channel(os.getenv('TARGET_CHANNEL'))
 
 try:
@@ -58,7 +65,7 @@ client = TelegramClient(session, API_ID, API_HASH)
 transfer_semaphore = asyncio.Semaphore(1)
 
 
-@client.on(events.NewMessage(chats=SOURCE_CHANNEL))
+@client.on(events.NewMessage(chats=SOURCE_CHANNELS))
 async def handle_new_message(event):
     message = event.message
 
@@ -99,7 +106,7 @@ async def main():
         'API_ID': os.getenv('API_ID'),
         'API_HASH': os.getenv('API_HASH'),
         'PHONE_NUMBER': os.getenv('PHONE_NUMBER'),
-        'SOURCE_CHANNEL': os.getenv('SOURCE_CHANNEL'),
+        'SOURCE_CHANNELS': os.getenv('SOURCE_CHANNELS', os.getenv('SOURCE_CHANNEL', '')),
         'TARGET_CHANNEL': os.getenv('TARGET_CHANNEL'),
     }.items() if not v]
 
@@ -113,7 +120,7 @@ async def main():
     await client.start(phone=PHONE_NUMBER)
     me = await client.get_me()
     logger.info(f"Logged in as {me.first_name} (@{me.username})")
-    logger.info(f"Monitoring: {SOURCE_CHANNEL} → {TARGET_CHANNEL}")
+    logger.info(f"Monitoring: {SOURCE_CHANNELS} → {TARGET_CHANNEL}")
     logger.info("Waiting for new files...")
     await client.run_until_disconnected()
 

@@ -21,7 +21,7 @@ A Python-based Telegram bot that automatically forwards files (photos, videos, d
 - Access to both source and target channels
 
 ## Setup
-
+------
 ### 1. Clone or Download
 
 ```bash
